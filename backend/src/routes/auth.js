@@ -129,7 +129,7 @@ const hashToken = (token) => createHash('sha256').update(token).digest('hex')
 // background so the response time doesn't give it away either.
 router.post('/forgot-password', resetLimiter, async (req, res, next) => {
   try {
-    const { email } = req.body ?? {}
+    const { email, lang } = req.body ?? {}
     if (typeof email !== 'string' || !EMAIL_RE.test(email.trim()) || email.length > 254) {
       return res.status(400).json({ error: 'Please enter a valid email address' })
     }
@@ -142,7 +142,8 @@ router.post('/forgot-password', resetLimiter, async (req, res, next) => {
       await user.save()
 
       const link = `${clientUrl()}/reset-password?token=${token}`
-      sendPasswordResetEmail(user, link, RESET_MINUTES).catch((e) =>
+      // lang is checked against the known languages inside (anything else -> English)
+      sendPasswordResetEmail(user, link, RESET_MINUTES, lang).catch((e) =>
         console.error('Could not send password reset email:', e.message),
       )
     }

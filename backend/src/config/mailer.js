@@ -10,6 +10,7 @@
 // =============================================================================
 
 import nodemailer from 'nodemailer'
+import { resetEmailText } from './resetEmailText.js'
 
 let transporter = null
 
@@ -48,24 +49,25 @@ export async function sendMail({ to, subject, text, html }) {
 // Escape text before putting it in an HTML email
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`)
 
-export function sendPasswordResetEmail(user, link, minutes) {
+// lang: the app language the person was using (unknown -> English)
+export function sendPasswordResetEmail(user, link, minutes, lang) {
+  const T = resetEmailText(lang)
   const text =
-    `Hi ${user.name},\n\n` +
-    `Someone (hopefully you) asked to reset the password for your RehabVision account.\n` +
-    `Open this link to choose a new password. It works once and expires in ${minutes} minutes:\n\n` +
+    `${T.hi(user.name)}\n\n` +
+    `${T.asked}\n` +
+    `${T.expires(minutes)}\n\n` +
     `${link}\n\n` +
-    `If you didn't ask for this, you can ignore this email. Your password won't change.\n`
+    `${T.ignore}\n`
   const html = `
-    <div style="font-family:system-ui,sans-serif;max-width:480px;color:#0f172a">
-      <h2 style="margin:0 0 16px">Reset your RehabVision password</h2>
-      <p>Hi ${esc(user.name)},</p>
-      <p>Someone (hopefully you) asked to reset the password for your account.
-         This link works once and expires in ${minutes} minutes.</p>
+    <div dir="${T.dir}" style="font-family:system-ui,sans-serif;max-width:480px;color:#0f172a">
+      <h2 style="margin:0 0 16px">${esc(T.subject)}</h2>
+      <p>${esc(T.hi(user.name))}</p>
+      <p>${esc(T.asked)} ${esc(T.expires(minutes))}</p>
       <p style="margin:24px 0">
-        <a href="${esc(link)}" style="background:#10b981;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">Choose a new password</a>
+        <a href="${esc(link)}" style="background:#10b981;color:#fff;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:600">${esc(T.button)}</a>
       </p>
-      <p style="font-size:13px;color:#64748b">Or paste this into your browser:<br>${esc(link)}</p>
-      <p style="font-size:13px;color:#64748b">If you didn't ask for this, ignore this email. Your password won't change.</p>
+      <p style="font-size:13px;color:#64748b">${esc(T.paste)}<br><span dir="ltr">${esc(link)}</span></p>
+      <p style="font-size:13px;color:#64748b">${esc(T.ignore)}</p>
     </div>`
-  return sendMail({ to: user.email, subject: 'Reset your RehabVision password', text, html })
+  return sendMail({ to: user.email, subject: T.subject, text, html })
 }

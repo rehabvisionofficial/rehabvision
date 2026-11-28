@@ -341,13 +341,14 @@ export function getStrings(lang) {
 
 // The chosen language is remembered on this device (browser storage).
 // Storage can be blocked (e.g. private mode), so every access is wrapped in try/catch.
+// Returns null when the patient never picked one: the coach then follows the app language.
 const LANG_KEY = "coachLanguage";
 export function loadLang() {
   try {
     const saved = localStorage.getItem(LANG_KEY);
     if (saved && LANGUAGES[saved]) return saved;
   } catch { /* storage unavailable: use default */ }
-  return DEFAULT_LANG;
+  return null;
 }
 export function saveLang(lang) {
   try { localStorage.setItem(LANG_KEY, lang); } catch { /* ignore */ }

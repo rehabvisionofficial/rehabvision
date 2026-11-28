@@ -252,12 +252,12 @@ export default {
           <li>Les champs ont des libellés visibles, et les erreurs sont expliquées par des mots, pas seulement par la couleur.</li>
           <li>Le coach énonce ses retours à voix haute : pas besoin de regarder l’écran.</li>
           <li>Les animations sont réduites si votre appareil est réglé pour limiter les mouvements.</li>
-          <li>L’application et ces politiques sont disponibles en anglais, français et arabe (de droite à gauche), et le coach parle plusieurs autres langues.</li>
+          <li>L’application, le coach d’exercices et ces politiques sont disponibles en huit langues : arabe (de droite à gauche), arménien occidental, anglais, français, espagnol, allemand, italien et turc.</li>
         </ul>
         <h2>Limites connues</h2>
         <ul>
           <li>Le coach a besoin d’une caméra et qu’une partie suffisante de votre corps soit visible pour mesurer les angles.</li>
-          <li>Les instructions détaillées des exercices (« Comment faire ») et certains messages du serveur sont uniquement en anglais.</li>
+          <li>Quelques rares messages techniques du serveur, qui n’apparaissent que si un problème survient dans l’application, sont uniquement en anglais.</li>
           <li>Le site n’a pas encore été audité par un expert indépendant en accessibilité.</li>
         </ul>
         <h2>Signaler un problème</h2>

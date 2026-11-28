@@ -5,8 +5,8 @@
 //   2. See the (up to 3) exercises the physio assigned, and start one.
 //   3. When an exercise is finished, save the results (or keep them on the
 //      device if offline, and send them next time).
-// Page text follows the app language; the exercise coach has its own language
-// (it supports more languages, e.g. Armenian).
+// Page text follows the app language; the exercise coach follows it too,
+// unless the patient picks a different coach language.
 // =============================================================================
 
 import { useEffect, useRef, useState } from 'react'
@@ -24,7 +24,8 @@ import { useLang } from '../i18n/AppLanguage'
 const PatientHome = () => {
   const { user, setUser, refresh, logout } = useAuth()
   const { t, tr, lang: appLang } = useLang()
-  const [coachLang, setCoachLang] = useState(loadLang)
+  const [coachChoice, setCoachLang] = useState(loadLang)
+  const coachLang = coachChoice ?? appLang // until the patient picks one, the coach speaks the app language
   const [catalog, setCatalog] = useState(null) // exercise instructions
   const [active, setActive] = useState(null)   // the exercise being done now
   const [finished, setFinished] = useState(null) // a finished session waiting for its pain report
@@ -226,7 +227,7 @@ const PatientHome = () => {
                           <ul className="my-2 list-disc space-y-1 ps-5 marker:text-accent">
                             {how.form.map((line) => <li key={line}>{line}</li>)}
                           </ul>
-                          <p className="text-xs font-medium text-muted">{translated ? pageUi.camera : "Camera:"} {how.camera}</p>
+                          <p className="text-xs font-medium text-muted">{pageUi.camera} {how.camera}</p>
                         </div>
                       </details>
                     )}

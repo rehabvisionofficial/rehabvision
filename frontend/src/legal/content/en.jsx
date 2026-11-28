@@ -254,12 +254,12 @@ export default {
           <li>Form fields have visible labels, and errors are explained in words, not only in colour.</li>
           <li>The exercise coach speaks its feedback, so you don&rsquo;t need to look at the screen.</li>
           <li>Animations are reduced if your device is set to reduce motion.</li>
-          <li>The app and these policies are available in English, French and Arabic (right-to-left), and the exercise coach speaks several more languages.</li>
+          <li>The app, the exercise coach and these policies are available in eight languages: Arabic (right-to-left), Western Armenian, English, French, Spanish, German, Italian and Turkish.</li>
         </ul>
         <h2>Known limitations</h2>
         <ul>
           <li>The exercise coach needs a camera and enough of your body in view to measure angles.</li>
-          <li>The step-by-step exercise instructions (&ldquo;How to do it&rdquo;) and some messages from the server are in English only.</li>
+          <li>A few rare technical messages from the server, which only appear if something goes wrong inside the app, are in English only.</li>
           <li>The site has not yet been audited by an independent accessibility expert.</li>
         </ul>
         <h2>Tell us about a problem</h2>

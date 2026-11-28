@@ -90,7 +90,8 @@ export default function AidPanel({ account, reload }) {
       {error && <p role="alert" className="alert-error">{tr(error)}</p>}
 
       {canApply && !banned && (
-        <form onSubmit={apply} className="flex flex-col gap-6">
+        <form onSubmit={apply} onInvalidCapture={(e) => { e.preventDefault(); e.currentTarget.querySelector(':invalid')?.focus() }} className="flex flex-col gap-6">
+          {/* an unticked box shakes and turns red (.consent) instead of the browser's popup */}
           <fieldset disabled={locked} className="contents">
             <ul className="grid gap-3 md:grid-cols-2">
               {trackBox('A', (

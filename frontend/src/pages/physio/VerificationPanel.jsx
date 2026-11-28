@@ -87,7 +87,8 @@ export default function VerificationPanel({ account, reload }) {
 
       {error && <p role="alert" className="alert-error">{tr(error)}</p>}
 
-      <form onSubmit={saveProfile} className="panel flex flex-col gap-4">
+      {/* invalid fields show the translated hints below instead of the browser's popup */}
+      <form onSubmit={saveProfile} onInvalidCapture={(e) => { e.preventDefault(); e.currentTarget.querySelector(':invalid')?.focus() }} className="panel flex flex-col gap-4">
         <h2 className="section-title mb-0">{t.profileTitle}</h2>
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="field-label">
@@ -97,12 +98,14 @@ export default function VerificationPanel({ account, reload }) {
               <option value="">{t.chooseRegion}</option>
               {Object.keys(REGIONS).map((r) => <option key={r} value={r}>{t.regions[r]}</option>)}
             </select>
+            <span className="label-hint">{t.chooseRegion}</span>
             <span className="text-xs font-normal">{t.regionHelp}</span>
           </label>
           <label className="field-label">
             {t.phone}
             <input className="field" type="tel" dir="ltr" autoComplete="tel" placeholder="+961 3 123 456" required
-              pattern="\+?[0-9 ()\-]{6,20}" value={profile.phone ?? ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} />
+              pattern="\+?[0-9 \(\)\-]{6,20}" value={profile.phone ?? ''} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} />
+            <span className="label-hint">{t.err.phoneInvalid}</span>
             <span className="text-xs font-normal">{t.phoneHelp}</span>
           </label>
           <label className="field-label sm:col-span-2">

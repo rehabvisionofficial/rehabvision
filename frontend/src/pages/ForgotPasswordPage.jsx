@@ -11,7 +11,7 @@ import AuthLayout from '../components/AuthLayout'
 import { useLang } from '../i18n/AppLanguage'
 
 const ForgotPasswordPage = () => {
-  const { t, tr } = useLang()
+  const { t, tr, lang } = useLang()
   const [email, setEmail] = useState('')
   const [sentTo, setSentTo] = useState('')
   const [error, setError] = useState('')
@@ -22,7 +22,7 @@ const ForgotPasswordPage = () => {
     setError('')
     setBusy(true)
     try {
-      await api('/auth/forgot-password', { method: 'POST', body: { email } })
+      await api('/auth/forgot-password', { method: 'POST', body: { email, lang } }) // lang: the email is written in the app language
       setSentTo(email.trim())
     } catch (err) {
       setError(err.message)

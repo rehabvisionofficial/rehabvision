@@ -130,7 +130,8 @@ export default function BillingPanel({ account, reload }) {
                 <li>{t.payStep2} <code dir="ltr" className="rounded bg-paper px-1.5 font-semibold">{user.publicId}</code></li>
                 <li>{t.payStep3}</li>
               </ol>
-              <form onSubmit={pay} className="flex flex-col gap-3">
+              {/* invalid fields show the translated hint below instead of the browser's popup */}
+              <form onSubmit={pay} onInvalidCapture={(e) => { e.preventDefault(); e.currentTarget.querySelector(':invalid')?.focus() }} className="flex flex-col gap-3">
                 <fieldset>
                   <legend className="mb-2 text-sm font-semibold text-muted">{t.payMethod}</legend>
                   <div className="segmented max-w-xs">
@@ -142,6 +143,7 @@ export default function BillingPanel({ account, reload }) {
                 <label className="field-label">
                   {t.payRef}
                   <input className="field" dir="ltr" required pattern="[A-Za-z0-9\-]{4,40}" value={reference} onChange={(e) => setReference(e.target.value)} />
+                  <span className="label-hint">{t.err.refInvalid}</span>
                 </label>
                 <button className="btn-primary self-start" disabled={busy === 'pay'}>
                   {busy === 'pay' && <LoaderCircle aria-hidden className="animate-spin" />} {t.sendPayment}

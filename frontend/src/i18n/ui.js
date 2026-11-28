@@ -1,8 +1,9 @@
 // =============================================================================
 // ui.js — every piece of on-screen text in the app (outside the exercise
-// coach, which has its own languages in messages.js), in English, French and
-// Arabic. Missing strings fall back to English.
-// French and Arabic should be checked by a native speaker.
+// coach, which has its own text in messages.js). English, French and Arabic
+// are below; Western Armenian, Spanish, German, Italian and Turkish live in
+// langs/<code>.js. Missing strings fall back to English.
+// Every translation should be checked by a native speaker.
 // =============================================================================
 
 const en = {
@@ -688,9 +689,19 @@ const ar = {
   },
 }
 
-import { PRO } from './pro'
+import { PRO as PRO_BASE } from './pro'
+import * as hyw from './langs/hyw'
+import * as es from './langs/es'
+import * as de from './langs/de'
+import * as it from './langs/it'
+import * as tr from './langs/tr'
 
-export const UI = { en, fr, ar }
+// Languages added later keep their ui + pro text together in langs/<code>.js
+const MORE = { hyw, es, de, it, tr }
+const pick = (part) => Object.fromEntries(Object.entries(MORE).map(([code, m]) => [code, m[part]]))
+
+export const UI = { en, fr, ar, ...pick('ui') }
+export const PRO = { ...PRO_BASE, ...pick('pro') }
 
 // Strings for a language; anything missing falls back to English
 export const uiStrings = (lang) => {

@@ -1,9 +1,9 @@
 // =============================================================================
-// AppLanguage.jsx — the app's display language (English, French or Arabic),
-// shared by every screen and the policy pages.
+// AppLanguage.jsx — the app's display language (the same 8 languages as the
+// exercise coach), shared by every screen and the policy pages.
 //   const { t, lang, setLang, locale, tr } = useLang()
 // The choice is remembered on this device ("appLanguage" in browser storage).
-// First visit: the browser's language if it's French or Arabic, else English.
+// First visit: the browser's language if supported, else English.
 // Arabic switches the whole page to right-to-left.
 // =============================================================================
 
@@ -16,6 +16,12 @@ export const APP_LANGS = [
   { code: 'fr', label: 'Français', locale: 'fr-FR', dir: 'ltr' },
   // Western digits, as commonly used in Lebanon
   { code: 'ar', label: 'العربية', locale: 'ar-LB-u-nu-latn', dir: 'rtl' },
+  // Western Armenian: browsers have no "hyw" date/number formats, so use Armenian
+  { code: 'hyw', label: 'Արեւմտահայերէն', locale: 'hy-AM', dir: 'ltr' },
+  { code: 'es', label: 'Español', locale: 'es-ES', dir: 'ltr' },
+  { code: 'de', label: 'Deutsch', locale: 'de-DE', dir: 'ltr' },
+  { code: 'it', label: 'Italiano', locale: 'it-IT', dir: 'ltr' },
+  { code: 'tr', label: 'Türkçe', locale: 'tr-TR', dir: 'ltr' },
 ]
 
 const KEY = 'appLanguage'
@@ -26,8 +32,9 @@ function initialLang() {
     const saved = localStorage.getItem(KEY)
     if (isSupported(saved)) return saved
   } catch { /* storage blocked: fall through */ }
-  const browser = (navigator.language || 'en').slice(0, 2)
-  return isSupported(browser) ? browser : 'en'
+  const browser = (navigator.language || 'en').toLowerCase()
+  if (browser.startsWith('hy')) return 'hyw' // Armenian browsers get Western Armenian
+  return isSupported(browser.slice(0, 2)) ? browser.slice(0, 2) : 'en'
 }
 
 const LangContext = createContext(null)

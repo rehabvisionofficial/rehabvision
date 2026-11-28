@@ -62,7 +62,7 @@ const en = {
     ['Every session recorded', 'Date, exercise, good reps, pain and target, at a glance.'],
     ['AI movement tracking', 'Joint landmarks on the camera view, a live rep counter and spoken angle guidance.'],
     ['One-ID connection', 'Patients type their physio’s public ID to receive their exercises. Nothing else to set up.'],
-    ['Eight languages', 'Patients choose the coach language: Arabic, Armenian, English, French and more.'],
+    ['Eight languages', 'The app, the coach and the policies in Arabic, Armenian, English, French, Spanish, German, Italian and Turkish.'],
   ],
   howTitle: 'How it works',
   howSteps: [
@@ -306,6 +306,12 @@ const en = {
     tooManyFiles: 'Too many files of this type',
     physioFull: "This physiotherapist can't take new patients right now",
     referralUnknown: 'No physiotherapist found with that referral ID',
+    onlyReviewers: 'Only the review team can do this',
+    invalidDecision: 'Invalid decision',
+    nothingToReview: 'Nothing to review',
+    aidRange: 'Aid must be between 0% and 75%',
+    sponsorRange: 'Sponsor share must be between 0% and 100%, for sponsored seats only',
+    noFreeMonths: 'No free months to use',
   },
 }
 
@@ -340,7 +346,7 @@ const fr = {
     ['Chaque séance enregistrée', 'Date, exercice, bonnes répétitions, douleur et objectif, d’un coup d’œil.'],
     ['Suivi du mouvement par IA', 'Repères articulaires sur l’image, compteur de répétitions en direct et guidage vocal de l’angle.'],
     ['Connexion par identifiant', 'Le patient saisit l’identifiant public de son kiné pour recevoir ses exercices. Rien d’autre à configurer.'],
-    ['Huit langues', 'Le patient choisit la langue du coach : arabe, arménien, anglais, français et plus.'],
+    ['Huit langues', 'L’application, le coach et les politiques en arabe, arménien, anglais, français, espagnol, allemand, italien et turc.'],
   ],
   howTitle: 'Comment ça marche',
   howSteps: [
@@ -575,6 +581,12 @@ const fr = {
     tooManyFiles: 'Trop de fichiers de ce type',
     physioFull: 'Ce kinésithérapeute ne peut pas prendre de nouveaux patients pour le moment',
     referralUnknown: 'Aucun kinésithérapeute ne correspond à cet identifiant de parrainage',
+    onlyReviewers: 'Seule l’équipe de vérification peut faire cela',
+    invalidDecision: 'Décision invalide',
+    nothingToReview: 'Rien à examiner',
+    aidRange: 'L’aide doit être comprise entre 0 % et 75 %',
+    sponsorRange: 'La part du sponsor doit être comprise entre 0 % et 100 %, uniquement pour les places sponsorisées',
+    noFreeMonths: 'Aucun mois offert à utiliser',
   },
 }
 
@@ -609,7 +621,7 @@ const ar = {
     ['تسجيل كل جلسة', 'التاريخ والتمرين والتكرارات الصحيحة والألم والهدف، بلمحة واحدة.'],
     ['تتبّع الحركة بالذكاء الاصطناعي', 'نقاط المفاصل على صورة الكاميرا، وعدّاد مباشر للتكرارات، وإرشاد صوتي للزاوية.'],
     ['ربط برمز واحد', 'يكتب المريض الرمز العام لمعالجه ليستلم تمارينه. لا شيء آخر لإعداده.'],
-    ['ثماني لغات', 'يختار المريض لغة المدرّب: العربية والأرمنية والإنجليزية والفرنسية وغيرها.'],
+    ['ثماني لغات', 'التطبيق والمدرّب والسياسات بالعربية والأرمنية والإنجليزية والفرنسية والإسبانية والألمانية والإيطالية والتركية.'],
   ],
   howTitle: 'كيف يعمل',
   howSteps: [
@@ -844,6 +856,12 @@ const ar = {
     tooManyFiles: 'عدد كبير جداً من الملفات من هذا النوع',
     physioFull: 'لا يستطيع هذا المعالج استقبال مرضى جدد حالياً',
     referralUnknown: 'لم يُعثر على معالج فيزيائي بهذا الرمز',
+    onlyReviewers: 'هذا الإجراء متاح لفريق المراجعة فقط',
+    invalidDecision: 'قرار غير صالح',
+    nothingToReview: 'لا يوجد ما تجب مراجعته',
+    aidRange: 'يجب أن تكون المساعدة بين 0% و75%',
+    sponsorRange: 'يجب أن تكون حصة الجهة الراعية بين 0% و100%، وللمقاعد المدعومة فقط',
+    noFreeMonths: 'لا توجد أشهر مجانية لاستخدامها',
   },
 }
 
