@@ -136,6 +136,8 @@ export const ui = {
   giveIdToPatients: 'Dai questo ID ai tuoi pazienti perché possano aggiungerti.',
   myPatients: 'I miei pazienti',
   refreshList: 'Aggiorna elenco',
+  searchPatients: 'Cerca per nome o email',
+  noPatientMatch: (q) => `Nessun paziente corrisponde a «${q}».`,
   loadingPatients: 'Caricamento pazienti',
   noPatientsYet: 'Ancora nessun paziente. Compariranno qui dopo aver aggiunto il tuo ID.',
   needsAttention: 'Richiedono attenzione (ultimi 7 giorni)',

@@ -136,6 +136,8 @@ export const ui = {
   giveIdToPatients: 'Hastalarınızın sizi ekleyebilmesi için bu kimliği onlara verin.',
   myPatients: 'Hastalarım',
   refreshList: 'Listeyi yenile',
+  searchPatients: 'Ad veya e-postaya göre ara',
+  noPatientMatch: (q) => `“${q}” ile eşleşen hasta yok.`,
   loadingPatients: 'Hastalar yükleniyor',
   noPatientsYet: 'Henüz hasta yok. Kimliğinizi eklediklerinde burada görünecekler.',
   needsAttention: 'İlgi gerektirenler (son 7 gün)',
