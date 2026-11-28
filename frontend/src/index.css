@@ -224,6 +224,113 @@
   select:is(.field, .field-sm) option {
     @apply bg-white text-ink;
   }
+
+  /* Browsers that let the open list be styled (Chrome/Edge 135+) get the full
+     design: a floating card that springs open, options that cascade in, a teal
+     hover and check mark, and a chevron that turns. Others keep the chevron above
+     and the browser's own list. Keyboard, screen readers and mobile behave as a
+     normal <select> either way. */
+  @supports (appearance: base-select) {
+    select:is(.field, .field-sm),
+    select:is(.field, .field-sm)::picker(select) {
+      appearance: base-select;
+    }
+    select:is(.field, .field-sm) {
+      @apply flex items-center gap-2 pe-3.5;
+      background-image: none;
+    }
+    select.field {
+      @apply pe-4;
+    }
+    /* same specificity as the hover/open chevron rules above, and later */
+    select:is(.field, .field-sm):is(:hover, :focus):not(:disabled),
+    select:is(.field, .field-sm):open {
+      background-image: none;
+    }
+
+    /* The chevron: drawn with a mask so it takes the text colour */
+    select:is(.field, .field-sm)::picker-icon {
+      content: "";
+      @apply ms-auto h-[1.1rem] w-[1.1rem] shrink-0 bg-muted;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 8l4 4 4-4'/%3E%3C/svg%3E") center / contain no-repeat;
+      transition: rotate 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), background-color 0.2s ease-out;
+    }
+    select:is(.field, .field-sm):is(:hover, :focus-visible, :open):not(:disabled)::picker-icon {
+      @apply bg-accent;
+    }
+    select:is(.field, .field-sm):open::picker-icon {
+      rotate: 180deg;
+    }
+
+    /* The open list: a floating card that springs down from the field */
+    select:is(.field, .field-sm)::picker(select) {
+      @apply rounded-2xl border-0 bg-white p-1.5 text-ink shadow-lift;
+      box-shadow: 0 0 0 1px rgb(20 50 58 / 0.08), theme('boxShadow.lift');
+      margin-block: 0.45rem;
+      max-block-size: min(22rem, 60vh);
+      max-inline-size: min(30rem, calc(100vw - 2rem));
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      scrollbar-width: thin;
+      transform-origin: top center;
+      opacity: 0;
+      translate: 0 -0.5rem;
+      scale: 0.96;
+      transition:
+        opacity 0.18s ease-out,
+        translate 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+        scale 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+        display 0.18s allow-discrete,
+        overlay 0.18s allow-discrete;
+    }
+    select:is(.field, .field-sm):open::picker(select) {
+      opacity: 1;
+      translate: 0 0;
+      scale: 1;
+    }
+    @starting-style {
+      select:is(.field, .field-sm):open::picker(select) {
+        opacity: 0;
+        translate: 0 -0.5rem;
+        scale: 0.96;
+      }
+    }
+    select.field-sm::picker(select) {
+      @apply rounded-xl;
+    }
+
+    /* Options: roomy rows that cascade in, teal on hover, a check on the chosen one */
+    select:is(.field, .field-sm) option {
+      @apply flex cursor-pointer items-center gap-3 rounded-xl px-3 py-2.5 text-[0.95rem] leading-snug text-ink;
+      transition: background-color 0.15s ease-out, color 0.15s ease-out, padding 0.2s ease-out;
+    }
+    select.field-sm option {
+      @apply text-sm;
+    }
+    select:is(.field, .field-sm):open option {
+      animation: option-in 0.32s cubic-bezier(0.22, 1, 0.36, 1) backwards;
+      animation-delay: calc(min(sibling-index(), 12) * 16ms);
+    }
+    select:is(.field, .field-sm) option:is(:hover, :focus-visible) {
+      @apply bg-accent-tint text-accent-hover outline-none;
+      padding-inline-start: 1rem;
+    }
+    select:is(.field, .field-sm) option:checked {
+      @apply font-semibold text-accent-hover;
+    }
+    select:is(.field, .field-sm) option:checked:not(:hover, :focus-visible) {
+      @apply bg-paper;
+    }
+    select:is(.field, .field-sm) option[value=""] {
+      @apply text-muted;
+    }
+    select:is(.field, .field-sm) option::checkmark {
+      content: "";
+      @apply order-1 ms-auto h-4 w-4 shrink-0 bg-accent;
+      mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 10.5l3.2 3.2L15 7'/%3E%3C/svg%3E") center / contain no-repeat;
+      animation: check-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+    }
+  }
   .form-label {
     @apply -mb-2 text-sm font-semibold text-ink;
   }
@@ -620,8 +727,21 @@
   }
 }
 
+/* Dropdown list: options rise in; the chosen option's check pops */
+@keyframes option-in {
+  from { opacity: 0; translate: 0 -0.35rem; }
+}
+@keyframes check-pop {
+  from { opacity: 0; scale: 0.4; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  /* the dropdown's parts are pseudo-elements that "*" doesn't reach */
+  ::picker(select), ::picker-icon, ::checkmark {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
