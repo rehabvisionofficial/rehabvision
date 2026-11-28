@@ -2,7 +2,9 @@
 // Design tokens. Theme: "range of motion" — deep petrol ink on a cool mist
 // surface, cedar teal for action, sunlit amber for a reached target. Soft,
 // layered radii: big panels 28px, controls 16px, buttons fully round.
-export default {
+// CommonJS (.cjs) on purpose: Node 22 caches ES-module configs, so a running
+// dev server would never see edits to this file without a restart.
+module.exports = {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",

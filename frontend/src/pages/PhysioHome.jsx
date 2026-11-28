@@ -8,7 +8,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { Check, Copy, LoaderCircle, Plus, RefreshCw } from 'lucide-react'
+import { Check, Copy, LoaderCircle, Plus, RefreshCw, Search } from 'lucide-react'
 import useConfirm from '../components/useConfirm'
 import { useAuth } from '../auth/authContext'
 import { api } from '../api'
@@ -16,6 +16,12 @@ import { getStrings } from '../i18n/messages'
 import { useLang } from '../i18n/AppLanguage'
 
 const MAX_EXERCISES = 3
+
+// Share of reps that reached the target: mostly good, mixed, or mostly short
+const goodRepTone = (s) => {
+  const ratio = s.totalReps ? s.goodReps / s.totalReps : 0
+  return ratio >= 0.8 ? 'bg-accent-tint text-accent-hover' : ratio >= 0.5 ? 'bg-amber-tint text-amber-ink' : 'bg-danger-tint text-danger'
+}
 
 // Exercise name in the app language, falling back to the catalog's English name
 const useExerciseName = (catalog) => {
@@ -46,6 +52,7 @@ const PhysioHome = () => {
   const [error, setError] = useState('')
   const [refreshing, setRefreshing] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [query, setQuery] = useState('')
 
   // Expired login -> back to the login page; anything else -> show the message
   const handleError = useCallback((e) => (e.status === 401 ? logout() : setError(e.message)), [logout])
@@ -86,6 +93,10 @@ const PhysioHome = () => {
       toast.error(t.copyFailed)
     }
   }
+
+  const q = query.trim().toLowerCase()
+  const shownPatients = (patients ?? []).filter((p) =>
+    !q || p.name.toLowerCase().includes(q) || p.email.toLowerCase().includes(q))
 
   return (
     <div className="stagger flex flex-col gap-8">
@@ -132,6 +143,15 @@ const PhysioHome = () => {
             <RefreshCw aria-hidden className={refreshing ? 'animate-spin' : ''} /> {t.refreshList}
           </button>
         </div>
+        {/* search only helps once the list is long */}
+        {patients?.length > 3 && (
+          <label className="relative mb-4 block">
+            <span className="sr-only">{t.searchPatients}</span>
+            <Search aria-hidden className="pointer-events-none absolute start-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
+            <input className="field ps-11" type="search" placeholder={t.searchPatients}
+              value={query} onChange={(e) => setQuery(e.target.value)} />
+          </label>
+        )}
         {patients === null ? (
           <div className="flex flex-col gap-4" aria-busy="true" aria-label={t.loadingPatients}>
             <div className="skeleton h-40" />
@@ -139,9 +159,11 @@ const PhysioHome = () => {
           </div>
         ) : patients.length === 0 ? (
           <p className="card border-dashed px-5 py-8 text-center text-sm text-muted">{t.noPatientsYet}</p>
+        ) : shownPatients.length === 0 ? (
+          <p className="card px-5 py-8 text-center text-sm text-muted">{t.noPatientMatch(query.trim())}</p>
         ) : (
           <ul className="stagger flex flex-col gap-4">
-            {patients.map((p) => (
+            {shownPatients.map((p) => (
               <PatientCard key={p._id} patient={p} catalog={catalog} onChanged={load} onError={handleError} />
             ))}
           </ul>
@@ -245,7 +267,7 @@ function PatientCard({ patient, catalog, onChanged, onError }) {
                   <td>{new Date(s.performedAt).toLocaleString(locale)}</td>
                   <td>{nameOf(s.exerciseId)}</td>
                   <td>{t[s.side] ?? s.side}</td>
-                  <td>{s.goodReps} / {s.totalReps}</td>
+                  <td><span className={`inline-block rounded-full px-2.5 py-0.5 font-semibold ${goodRepTone(s)}`}>{s.goodReps} / {s.totalReps}</span></td>
                   <td>{s.plan?.targetAngle}°</td>
                   <td className={s.painScore >= 7 || s.incident ? 'font-semibold text-danger' : ''}>
                     {s.painScore ?? '–'}{s.incident && <span className="block text-xs font-normal">{s.incident}</span>}

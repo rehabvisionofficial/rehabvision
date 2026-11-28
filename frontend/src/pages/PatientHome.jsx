@@ -11,7 +11,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { toast } from 'react-hot-toast'
-import { LoaderCircle, Play } from 'lucide-react'
+import { LoaderCircle, Play, TriangleAlert } from 'lucide-react'
 import useConfirm from '../components/useConfirm'
 import { useAuth } from '../auth/authContext'
 import { api, addSessionReport, saveSession, flushPendingSessions } from '../api'
@@ -56,6 +56,9 @@ const PatientHome = () => {
     setCoachLang(e.target.value)
     saveLang(e.target.value)
   }
+
+  // Opening or closing an exercise swaps the whole page, so start at the top
+  useEffect(() => { window.scrollTo(0, 0) }, [active, finished])
 
   // Step 1 of linking: find the physio and show their name
   const findPhysio = async (e) => {
@@ -214,11 +217,15 @@ const PatientHome = () => {
                 const how = translated ?? (info && { setup: info.setup, form: info.ideal_form, camera: info.measurement.preferred_camera_view })
                 return (
                   <li key={a._id} className="card card-hover flex flex-col gap-2 p-5 sm:p-6">
-                    <div className="text-lg font-bold text-ink">
-                      {exerciseNames[a.exerciseId] ?? a.exerciseId} · {t[a.side]}
+                    <h3 className="text-lg font-bold leading-snug text-ink">{exerciseNames[a.exerciseId] ?? a.exerciseId}</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <span className="chip bg-accent-tint text-accent-hover">{t[a.side]}</span>
+                      <span className="chip">{t.repsFromTo(a.reps, a.startAngle, a.targetAngle)}</span>
                     </div>
-                    <div className="text-sm font-medium text-ink">{t.repsFromTo(a.reps, a.startAngle, a.targetAngle)}</div>
-                    <div className="rounded-xl border-s-4 border-danger bg-danger-tint px-3 py-2 text-sm font-medium text-danger">{t.stopIf} <bdi>{a.stopCriteria}</bdi></div>
+                    <p className="flex items-start gap-2.5 rounded-xl bg-danger-tint px-3 py-2 text-sm font-medium text-danger">
+                      <TriangleAlert aria-hidden className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{t.stopIf} <bdi>{a.stopCriteria}</bdi></span>
+                    </p>
                     {how && (
                       <details className="mt-1 rounded-2xl bg-paper px-4 py-3 text-sm text-ink [&[open]>summary]:mb-2 [&>p]:leading-relaxed">
                         <summary>{t.howToDoIt} {!translated && t.instructionsInEnglish && <span className="font-normal text-muted">{t.instructionsInEnglish}</span>}</summary>
@@ -231,7 +238,7 @@ const PatientHome = () => {
                         </div>
                       </details>
                     )}
-                    <button className="btn-primary btn-lg mt-2 self-start" onClick={() => setActive(a)}>
+                    <button className="btn-primary btn-lg mt-2 w-full sm:w-auto sm:self-start" onClick={() => setActive(a)}>
                       <Play aria-hidden className="rtl:-scale-x-100" /> {t.startExercise}
                     </button>
                   </li>

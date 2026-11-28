@@ -26,6 +26,7 @@ import physioRoutes from './routes/physio.js'
 import sessionsRoutes from './routes/sessions.js'
 import physioAccountRoutes from './routes/physioAccount.js'
 import docsRoutes from './routes/docs.js'
+import { fileStoreEnabled } from './storage/fileStore.js'
 import adminRoutes from './routes/admin.js'
 
 export const app = express()
@@ -45,10 +46,7 @@ app.set('trust proxy', trustProxySetting())
 // Basic protection against too many requests from one IP
 app.use(rateLimiter)
 
-// Document photos are bigger than anything else, so only this route accepts
-// large bodies (a 4 MB file is about 5.4 MB as base64)
-app.use('/api/docs', express.json({ limit: '6mb' }))
-
+// (Document uploads are multipart forms, read by multer in routes/docs.js.)
 // Parse JSON request bodies so routes can read req.body
 app.use(express.json({ limit: '200kb' }))
 
@@ -104,6 +102,9 @@ async function start() {
     throw new Error('JWT_SECRET is not set. Copy .env.example to .env and fill it in.')
   }
   await connectDB().then(() => console.log('CONNECTED'))
+  if (!fileStoreEnabled()) {
+    console.warn('File storage (R2) is not configured: uploaded documents are kept in MongoDB. See backend/.env.example.')
+  }
   // Express 5 also calls this when listening FAILS (e.g. port already in use),
   // so check for an error instead of always printing "running"
   app.listen(PORT, (err) => {

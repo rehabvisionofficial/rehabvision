@@ -20,6 +20,8 @@ import {
   landmarksFor, measureAngle, visibleEnough, makeSmoother, makeRepCounter, outsideSafeRange,
 } from "./angles";
 import { getStrings, DEFAULT_LANG } from "../i18n/messages";
+import { ArrowLeft, Volume2, VolumeX } from "lucide-react";
+import useConfirm from "../components/useConfirm";
 
 // Spoken feedback using the browser's built-in text-to-speech
 // (works for patients with eye injuries too, and they don't need to look at the screen).
@@ -66,6 +68,11 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
   const [warning, setWarning] = useState("");
   const [cameraError, setCameraError] = useState(null); // null | "blocked" | "failed"
   const [cameraTry, setCameraTry] = useState(0);        // bump to ask for the camera again
+  const [tracking, setTracking] = useState(false);      // is the patient's limb in view right now?
+  const [voiceOn, setVoiceOn] = useState(true);         // spoken feedback on/off
+  const voiceOnRef = useRef(voiceOn);                   // read by the detection loop
+  voiceOnRef.current = voiceOn;
+  const [confirm, confirmDialog] = useConfirm();
 
   // Values kept between frames without re-rendering
   const repLogRef = useRef([]);     // details of every finished rep
@@ -124,6 +131,7 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
     // language — at most once every 2.5 seconds, unless `force` is true
     const say = (key, force = false) => {
       const now = performance.now();
+      if (!voiceOnRef.current) return;                    // patient turned the voice off
       if (force || now - lastSpokenRef.current > 2500) { // don't spam the patient
         speak(tRef.current.speech[key], tRef.current.speechLang);
         lastSpokenRef.current = now;
@@ -147,7 +155,7 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
 
       const lms = result.landmarks?.[0];        // normalized (for drawing + visibility)
       const world = result.worldLandmarks?.[0]; // meters (for angles)
-      if (!lms || !world) return;               // no person found in this frame
+      if (!lms || !world) { setTracking(false); return; } // no person found in this frame
 
       // Draw the skeleton: green lines between joints, orange dots on joints
       draw.drawConnectors(lms, PoseLandmarker.POSE_CONNECTIONS, { color: "#4ade80", lineWidth: 3 });
@@ -155,6 +163,7 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
 
       // If part of the limb is off-camera, the angle can't be trusted
       if (!visibleEnough(lms, points)) {
+        setTracking(false);
         setWarning(tRef.current.ui.moveIntoView);
         say("notVisible");
         return;
@@ -163,6 +172,7 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
       // Measure the clinical angle, smoothed to reduce jitter
       const ang = smooth(measureAngle(assignment.exerciseId, assignment.side, world));
       if (ang == null) return; // no angle yet
+      setTracking(true);
       setAngle(Math.round(ang));
 
       // Safety check against the physio's permitted range
@@ -210,8 +220,28 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
     });
   }
 
+  // Leaving loses the reps done so far, so ask first once there is something to lose
+  async function leave() {
+    if (reps > 0) {
+      const ok = await confirm({
+        title: t.ui.leaveTitle,
+        message: t.ui.leaveMessage,
+        confirmLabel: t.ui.leave,
+        cancelLabel: t.ui.stay,
+      });
+      if (!ok) return;
+    }
+    window.speechSynthesis?.cancel();
+    onCancel?.();
+  }
+
+  const toggleVoice = () => {
+    if (voiceOn) window.speechSynthesis?.cancel();
+    setVoiceOn(!voiceOn);
+  };
+
   // Errors still offer a way back, so the patient is never stuck on this screen
-  const backButton = <button className="btn-secondary btn-lg self-start" onClick={() => onCancel?.()}>{t.ui.back}</button>;
+  const backButton = <button className="btn-secondary btn-lg self-start" onClick={() => onCancel?.()}><ArrowLeft aria-hidden className="rtl:-scale-x-100" /> {t.ui.back}</button>;
   if (!points || error) {
     return (
       <div dir={t.dir} className="mx-auto flex max-w-[640px] flex-col gap-4">
@@ -221,14 +251,29 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
     );
   }
 
+  const done = reps >= assignment.reps;
+  const status = !ready ? "loading" : tracking ? "tracking" : "finding";
+
   return (
     // dir="rtl" makes Arabic text read right-to-left
-    <div dir={t.dir} className="stagger mx-auto flex max-w-[640px] flex-col gap-4">
-      <h2 className="text-2xl font-bold">
-        {t.exercises[assignment.exerciseId] ?? assignment.exerciseId} · {t.ui[assignment.side]}
-      </h2>
+    <div dir={t.dir} className="stagger mx-auto flex max-w-[680px] flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <button className="btn-ghost -ms-2 px-2.5" onClick={leave} aria-label={t.ui.back}>
+          <ArrowLeft aria-hidden className="rtl:-scale-x-100" />
+        </button>
+        <h2 className="me-auto text-xl font-bold leading-snug sm:text-2xl">
+          {t.exercises[assignment.exerciseId] ?? assignment.exerciseId}
+          <span className="chip ms-2 bg-accent-tint align-middle text-accent">{t.ui[assignment.side]}</span>
+        </h2>
+        <button className="btn-secondary px-3" onClick={toggleVoice} aria-pressed={voiceOn}
+          title={voiceOn ? t.ui.voiceOn : t.ui.voiceOff}>
+          {voiceOn ? <Volume2 aria-hidden /> : <VolumeX aria-hidden />}
+          <span className="hidden sm:inline">{voiceOn ? t.ui.voiceOn : t.ui.voiceOff}</span>
+        </button>
+      </div>
+
       {/* Video and canvas are stacked: the skeleton drawing sits on top of the camera */}
-      <div className="hud-frame overflow-hidden bg-ink" style={{ position: "relative" }}>
+      <div className="hud-frame" style={{ position: "relative" }}>
         {/* mirrored so it feels like a mirror to the patient.
             Video AND canvas both use object-contain inside the same 4:3 box, so they
             scale and letterbox identically and the skeleton always lines up with the
@@ -237,27 +282,69 @@ export default function ExerciseCoach({ assignment, lang = DEFAULT_LANG, onFinis
         <video ref={videoRef} playsInline muted className="block aspect-[4/3] bg-ink object-contain" style={{ width: "100%", transform: "scaleX(-1)" }} />
         <canvas ref={canvasRef} className="object-contain"
           style={{ position: "absolute", inset: 0, width: "100%", height: "100%", transform: "scaleX(-1)" }} />
+        {!cameraError && (
+          <p className="hud-pill" role="status">
+            <i aria-hidden className={status === "tracking" ? "bg-green-400" : status === "loading" ? "animate-pulse bg-white" : "animate-pulse bg-amber-400"} />
+            {status === "loading" ? t.ui.loading : status === "tracking" ? t.ui.tracking : t.ui.findingYou}
+          </p>
+        )}
+        {/* warnings sit on the video too, big enough to read from across the room */}
+        {!cameraError && warning && <p role="alert" className="hud-alert">{warning}</p>}
       </div>
-      {!ready && <p className="animate-pulse text-center text-sm font-medium text-muted">{t.ui.loading}</p>}
-      {/* Big, easy-to-read live numbers */}
-      <dl className="readout">
-        <div><dt>{t.ui.angle}</dt><dd className="text-accent">{angle ?? "—"}°</dd></div>
-        <div><dt>{t.ui.target}</dt><dd>{assignment.targetAngle}°</dd></div>
-        {/* key={reps}: remounts on each new rep so the number pops once */}
-        <div><dt>{t.ui.reps}</dt><dd><span key={reps} className="inline-block animate-tick">{reps}</span><span className="text-muted">/{assignment.reps}</span></dd></div>
-      </dl>
+
       {cameraError && (
         <div role="alert" className="alert-error flex-col items-stretch text-base">
           <p>{cameraError === "blocked" ? t.ui.cameraBlocked : t.ui.cameraFailed}</p>
           <button className="btn-secondary self-start" onClick={retryCamera}>{t.ui.tryAgain}</button>
         </div>
       )}
-      {!cameraError && warning && <p role="alert" className="animate-alert-in border-s-4 border-danger bg-danger-tint px-5 py-4 text-xl font-semibold text-danger">{warning}</p>}
-      {reps >= assignment.reps && <p className="animate-alert-in border-s-4 border-success bg-success-tint px-5 py-4 text-xl font-semibold text-success">{t.ui.targetReached}</p>}
+
+      {/* Big, easy-to-read live numbers */}
+      <dl className="readout">
+        <div><dt>{t.ui.angle}</dt><dd className="text-accent">{angle ?? "—"}°</dd></div>
+        <div><dt>{t.ui.target}</dt><dd>{assignment.targetAngle}°</dd></div>
+        {/* key={reps}: remounts on each new rep so the number pops once */}
+        <div><dt>{t.ui.reps}</dt><dd><span key={reps} className="inline-block animate-tick">{reps}</span><span className="text-2xl text-muted sm:text-3xl">/{assignment.reps}</span></dd></div>
+      </dl>
+
+      <RangeBar angle={angle} plan={assignment} t={t} />
+
+      <div className="progress" role="progressbar" aria-label={t.ui.reps}
+        aria-valuemin={0} aria-valuemax={assignment.reps} aria-valuenow={Math.min(reps, assignment.reps)}>
+        <span style={{ width: `${Math.min(100, (reps / assignment.reps) * 100)}%` }} className={done ? "bg-success" : ""} />
+      </div>
+
+      {done && <p className="alert-success text-lg">{t.ui.targetReached}</p>}
+
       <div className="flex gap-3">
         {/* nothing to save until at least one rep was measured */}
         <button className="btn-primary btn-lg flex-1" onClick={finish} disabled={reps === 0}>{t.ui.finish}</button>
-        <button className="btn-secondary btn-lg" onClick={() => onCancel?.()}>{t.ui.back}</button>
+        <button className="btn-secondary btn-lg" onClick={leave}>{t.ui.back}</button>
+      </div>
+      {confirmDialog}
+    </div>
+  );
+}
+
+// A horizontal bar showing the live angle against the physio's plan:
+// green = permitted (safe) range, red = outside it, a line at the target,
+// a faint line at the start, and a round thumb at the patient's angle.
+// Always drawn left-to-right (small angle -> large angle), even in Arabic.
+function RangeBar({ angle, plan, t }) {
+  const lo = Math.max(0, Math.min(plan.permittedMin, plan.startAngle, plan.targetAngle) - 20);
+  const hi = Math.min(180, Math.max(plan.permittedMax, plan.startAngle, plan.targetAngle) + 20);
+  const pos = (v) => `${Math.max(0, Math.min(100, ((v - lo) / (hi - lo || 1)) * 100))}%`;
+  return (
+    <div className="card px-4 pb-3 pt-4 sm:px-5">
+      <div dir="ltr" className="range-track" aria-hidden>
+        <span className="range-safe" style={{ left: pos(plan.permittedMin), right: `calc(100% - ${pos(plan.permittedMax)})` }} />
+        <span className="range-mark bg-muted/40" style={{ left: pos(plan.startAngle) }} />
+        <span className="range-mark bg-accent" style={{ left: pos(plan.targetAngle) }} />
+        {angle != null && <span className="range-thumb" style={{ left: pos(angle) }} />}
+      </div>
+      <div className="mt-2.5 flex flex-wrap justify-between gap-x-4 gap-y-1 text-xs font-semibold text-muted sm:text-sm">
+        <span className="flex items-center gap-1.5"><i aria-hidden className="h-2.5 w-2.5 rounded-full bg-success-tint ring-1 ring-success/40" />{t.ui.safeRange} {plan.permittedMin}°–{plan.permittedMax}°</span>
+        <span className="flex items-center gap-1.5"><i aria-hidden className="h-2.5 w-1 rounded-full bg-accent" />{t.ui.target} {plan.targetAngle}°</span>
       </div>
     </div>
   );

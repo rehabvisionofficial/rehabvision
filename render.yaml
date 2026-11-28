@@ -22,7 +22,7 @@ services:
         generateValue: true # Render makes a long random secret
       - key: MONGO_DB_NAME
         value: physio-coach
-      # The Netlify site's address, e.g. https://rehabvision.netlify.app
+      # The Vercel site's address, e.g. https://rehabvision.vercel.app
       # (several allowed, separated by commas; the first is used in emails)
       - key: CLIENT_ORIGIN
         sync: false
@@ -40,3 +40,12 @@ services:
       # Review team emails (verification, aid, payments), comma-separated
       - key: ADMIN_EMAILS
         sync: false
+      # Private Cloudflare R2 bucket for uploaded documents (see backend/.env.example)
+      - key: R2_ACCOUNT_ID
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET
+        value: rehabvision-docs

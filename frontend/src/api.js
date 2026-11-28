@@ -33,14 +33,17 @@ export class ApiError extends Error {
 //  - Locally: empty, so requests go to "/api/..." on the website itself, and
 //    vite.config.js forwards them to the backend on port 5001.
 //  - Hosted: set VITE_API_URL to the backend's address when building
-//    (e.g. https://rehabvision-api.onrender.com in Netlify's environment
+//    (e.g. https://rehabvision-api.onrender.com in Vercel's environment
 //    variables). It's built into the website, so it is not a secret.
 const API_BASE = (import.meta.env.VITE_API_URL || "").trim().replace(/\/+$/, "");
 
 // api("/auth/login", { method: "POST", body: {...} }) -> parsed JSON
+// body can also be a FormData (file uploads): it is sent as-is, and the
+// browser sets the multipart Content-Type itself.
 export async function api(path, { method = "GET", body } = {}) {
   const headers = {};
-  if (body !== undefined) headers["Content-Type"] = "application/json";
+  const isForm = body instanceof FormData;
+  if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
   const token = getToken();
   if (token) headers.Authorization = `Bearer ${token}`;
 
@@ -49,7 +52,7 @@ export async function api(path, { method = "GET", body } = {}) {
     res = await fetch(`${API_BASE}/api${path}`, {
       method,
       headers,
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body === undefined || isForm ? body : JSON.stringify(body),
     });
   } catch {
     throw new ApiError("Can't reach the server. Check your internet connection.", 0);

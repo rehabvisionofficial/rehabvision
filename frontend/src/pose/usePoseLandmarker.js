@@ -15,9 +15,9 @@ import { FilesetResolver, PoseLandmarker } from "@mediapipe/tasks-vision";
 // These files are served from frontend/public/, so the app works without
 // relying on Google's servers (useful during power/internet cuts):
 //   public/wasm/    -> MediaPipe's engine (copied from node_modules)
-//   public/models/  -> the trained pose model (pose_landmarker_lite.task)
+//   public/models/  -> the trained pose model (pose_landmarker_full.task)
 const WASM_PATH = "/wasm";
-const MODEL_PATH = "/models/pose_landmarker_lite.task";
+const MODEL_PATH = "/models/pose_landmarker_full.task";
 
 export function usePoseLandmarker() {
   // useRef (not state) for the model: changing it shouldn't re-render the page

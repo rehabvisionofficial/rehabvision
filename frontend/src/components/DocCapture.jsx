@@ -13,13 +13,6 @@ import { useLang } from '../i18n/AppLanguage'
 const MAX_BYTES = 4 * 1024 * 1024
 const MAX_SIDE = 1800
 
-const toBase64 = (blob) => new Promise((resolve, reject) => {
-  const r = new FileReader()
-  r.onload = () => resolve(String(r.result).split(',')[1])
-  r.onerror = reject
-  r.readAsDataURL(blob)
-})
-
 async function prepare(file) {
   if (file.type === 'application/pdf') return { mime: file.type, blob: file }
   const img = await createImageBitmap(file) // throws for formats the browser can't read (e.g. HEIC)
@@ -74,7 +67,11 @@ export default function DocCapture({ kind, docs = [], required, multi, selfie, l
     try {
       const { mime, blob } = await prepare(file)
       if (blob.size > MAX_BYTES) throw new Error(t.fileTooBig)
-      await api('/docs', { method: 'POST', body: { kind, mime, data: await toBase64(blob) } })
+      // sent as a real file (multipart form), not base64 text: a third smaller
+      const form = new FormData()
+      form.append('kind', kind)
+      form.append('file', blob, mime === 'application/pdf' ? 'document.pdf' : 'photo.jpg')
+      await api('/docs', { method: 'POST', body: form })
       await onChanged()
     } catch (err) {
       setError(err.message || t.err.badFile)

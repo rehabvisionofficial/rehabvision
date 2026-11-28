@@ -534,6 +534,9 @@
   }
 
   /* ---------- Exercise coach: camera frame with rounded corner marks ---------- */
+  .hud-frame {
+    @apply overflow-hidden rounded-3xl bg-ink shadow-lift;
+  }
   .hud-frame::before {
     content: "";
     @apply pointer-events-none absolute inset-3 z-10 rounded-2xl;
@@ -552,6 +555,49 @@
   }
   .readout dd {
     @apply text-3xl font-semibold leading-none tabular-nums text-ink sm:text-5xl;
+  }
+
+  /* status pill in the top corner of the camera ("Tracking", "Step into view") */
+  .hud-pill {
+    @apply absolute start-6 top-6 z-20 flex items-center gap-2 rounded-full bg-ink/70 px-3 py-1.5 text-sm font-semibold text-white backdrop-blur;
+  }
+  .hud-pill > i {
+    @apply h-2.5 w-2.5 rounded-full;
+  }
+  /* a warning shown over the camera, readable from across the room */
+  .hud-alert {
+    @apply absolute inset-x-4 bottom-4 z-20 animate-alert-in rounded-2xl bg-danger/95 px-5 py-4 text-center text-xl font-bold text-white shadow-lift sm:text-2xl;
+  }
+
+  /* small rounded labels ("Left", "10 reps") */
+  .chip {
+    @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full bg-paper px-3 py-1 text-sm font-semibold text-ink;
+  }
+
+  /* Range bar: the live angle against the physio's safe range and target */
+  .range-track {
+    @apply relative h-4 rounded-full bg-danger-tint ring-1 ring-inset ring-danger/15;
+  }
+  .range-safe {
+    @apply absolute inset-y-0 rounded-full bg-accent-tint ring-1 ring-inset ring-accent/25;
+  }
+  .range-mark {
+    @apply absolute -inset-y-1.5 w-1 -translate-x-1/2 rounded-full;
+  }
+  .range-thumb {
+    @apply absolute top-1/2 h-7 w-7 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-accent shadow-lift transition-[left] duration-150 ease-out;
+  }
+
+  /* thin progress bar (reps done) */
+  .progress {
+    @apply h-2.5 overflow-hidden rounded-full bg-paper;
+  }
+  .progress > span {
+    @apply block h-full rounded-full bg-accent transition-[width] duration-500 ease-out;
+  }
+
+  .alert-success {
+    @apply flex animate-alert-in items-center gap-3 rounded-2xl bg-amber-tint px-4 py-3 font-semibold text-amber-ink;
   }
 }
 

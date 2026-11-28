@@ -1,6 +1,6 @@
 // =============================================================================
 // deploy.js — settings that differ between running locally and hosting
-// (backend on Render, website on Netlify).
+// (backend on Render, website on Vercel).
 //
 // These are functions, not constants, because .env is loaded in server.js
 // after the imports have already run.
@@ -10,7 +10,7 @@ const DEV_ORIGIN = 'http://localhost:5173'
 
 // The website address(es) allowed to call this API, from CLIENT_ORIGIN.
 // Several can be given, separated by commas, e.g.
-//   CLIENT_ORIGIN=https://rehabvision.netlify.app,https://www.rehabvision.com
+//   CLIENT_ORIGIN=https://rehabvision.vercel.app,https://www.rehabvision.com
 // A trailing "/" is removed, because browsers send the origin without one.
 export function clientOrigins() {
   const list = (process.env.CLIENT_ORIGIN || DEV_ORIGIN)
